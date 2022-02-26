@@ -1,0 +1,27 @@
+html {
+  height: 100%;
+  overflow: hidden;
+  background-color: $mainWhite;
+  color: $mainBlack;
+}
+
+body {
+  height: 100%;
+}
+
+#__next {
+  height: 100%;
+
+  ::selection {
+    background-color: #f2cc35;
+  }
+}
+
+.layout {
+  height: 100%;
+  font-family: $mainFont !important;
+
+  .hide {
+    display: none;
+  }
+}
