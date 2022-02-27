@@ -1,56 +1,206 @@
 import React from 'react'
-import TextAnnotate from 'src/components/TextAnnotate'
+import { getSubstringsFromPosition } from 'src/helpers'
 
-const TEXT = 'A word or phrase that describes the page you are looking at.'
+const TEXT = `ATM ATM864511 1625 N. MARKET STREET - MEMO=ATM864511 1625 N. MARKET STREET VDPS0 GOLDEN 1 CREDIT UNION SACRAMENTO CA US`
 
-const TAG_COLORS = {
-  ORG: '#00ffa2',
-  PERSON: '#84d2ff',
-}
+const labels = [
+  { name: 'PERSON', color: '#FC005B', abbreviation: 'PER' },
+  { name: 'ORGANIZATION', color: '#00A6FF', abbreviation: 'ORG' },
+  { name: 'LOCATION', color: '#FFAC00', abbreviation: 'LOC' },
+  { name: 'DATE', color: '#ea00ff', abbreviation: 'DATE' },
+]
 
-const Testing2 = ({ content, value, onChange, getSpan }) => {
-  const [data, setData] = React.useState({
-    value: [{ start: 17, end: 19, tag: 'PERSON' }],
-    tag: 'PERSON',
-  })
+const Testing2 = () => {
+  const [body, setBody] = React.useState<
+    {
+      start: number
+      end: number
+      content: string
+      label: string | null
+      color?: string
+      isMarked?: boolean
+    }[]
+  >([{ start: 0, end: TEXT.length, content: TEXT, label: null }])
+  const [label, setLabel] = React.useState(labels[0])
+  const [bodyWithLabels, setBodyWithLabels] = React.useState([])
+  const [bodyWithCleanLabel, setBodyWithCleanLabel] = React.useState([])
 
-  const handleChange = (value) => {
-    setData({
-      ...data,
-      value,
-    })
-    console.log('triggered')
+  const getSelectedText = () => {
+    document.onmouseup = () => {
+      const selection = window.getSelection()
+
+      if (selection.toString() === ' ' || !selection.anchorNode) {
+        return
+      }
+
+      let start =
+        parseInt(
+          selection.anchorNode.parentElement.getAttribute('data-id'),
+          10
+        ) + selection.anchorOffset
+
+      let end =
+        parseInt(
+          selection.focusNode.parentElement.getAttribute('data-id'),
+          10
+        ) + selection.focusOffset
+
+      let position = selection.anchorNode.compareDocumentPosition(
+        selection.focusNode
+      )
+
+      // when no node is selected
+      if (position === 0 && selection.focusOffset === selection.anchorOffset) {
+        return
+      }
+
+      // if selection is backwards then swap the indices but keep the same start and end
+      if (
+        (!position && selection.anchorOffset > selection.focusOffset) ||
+        position === Node.DOCUMENT_POSITION_PRECEDING
+      ) {
+        ;[start, end] = [end, start]
+      }
+
+      // set selected labels on selected content
+      setBodyWithLabels([
+        ...bodyWithLabels,
+        {
+          start,
+          end,
+          content: TEXT.slice(start, end),
+          label: label.abbreviation,
+          color: label.color,
+        },
+      ])
+
+      setBodyWithCleanLabel([
+        ...bodyWithCleanLabel,
+        {
+          content: TEXT.slice(start, end),
+          label: label.abbreviation,
+        },
+      ])
+
+      selection.empty()
+    }
   }
 
-  const handleTagChange = (e) => {
-    setData({
-      ...data,
-      tag: e.target.value,
-    })
+  const handleDeselect = (event: React.ChangeEvent<HTMLSpanElement>) => {
+    const dataId = event.target.getAttribute('data-id')
+
+    const itemStartPos = parseInt(dataId, 10)
+
+    if (itemStartPos) {
+      const item = bodyWithLabels.find((item) => item.start === itemStartPos)
+
+      if (item) {
+        setBodyWithLabels(
+          bodyWithLabels.filter((item) => item.start !== itemStartPos)
+        )
+      }
+    }
   }
+
+  // event of select option
+  const onSelectLabel = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target
+
+    setLabel(labels.find((label) => label.abbreviation === value))
+  }
+
+  React.useEffect(() => {
+    setBody(getSubstringsFromPosition(TEXT, bodyWithLabels))
+  }, [bodyWithLabels])
 
   return (
     <>
       <div>
-        <select onChange={handleTagChange} value={data.tag}>
-          <option value="ORG">ORG</option>
-          <option value="PERSON">PERSON</option>
+        <select onChange={onSelectLabel}>
+          {labels.map((option) => (
+            <option key={option.name} value={option.abbreviation}>
+              {option.name}
+            </option>
+          ))}
         </select>
       </div>
-      <TextAnnotate
-        content={TEXT}
-        value={data.value}
-        onChange={handleChange}
-        getSpan={(span) => ({
-          ...span,
-          tag: data.tag,
-          color: TAG_COLORS[data.tag],
-        })}
-        data={data}
-      />
-      <pre style={{ fontSize: 12, lineHeight: 1.2 }}>
-        {JSON.stringify(data, null, 2)}
-      </pre>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}
+      >
+        <div
+          className="Testing2"
+          onMouseUp={getSelectedText}
+          style={{ marginTop: 50, maxWidth: 900 }}
+        >
+          {body.map((split, i) => (
+            <span key={`${split.start}-${split.end}`}>
+              {split.isMarked ? (
+                <mark
+                  key={`${split.start}-${split.end}`}
+                  data-id={split.start}
+                  style={{
+                    backgroundColor: split.color,
+                    padding: '0 5px',
+                    borderRadius: '5px',
+                  }}
+                >
+                  {split.content}
+                  {split.label && (
+                    <span
+                      style={{
+                        fontSize: '0.7em',
+                        fontWeight: 500,
+                        marginLeft: 6,
+                        background: 'white',
+                        padding: '0 5px',
+                        borderRadius: '2px',
+                        color: split.color,
+                      }}
+                    >
+                      {split.label}
+                    </span>
+                  )}
+                  <span
+                    style={{
+                      cursor: 'pointer',
+                      padding: '0 5px',
+                      color: '#CCCDCE',
+                    }}
+                    onClick={(e) => handleDeselect(e as any)}
+                    data-id={split.start}
+                  >
+                    x
+                  </span>
+                </mark>
+              ) : (
+                <span key={split.start} data-id={split.start}>
+                  {split.content}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+        <div
+          style={{
+            height: 500,
+            border: '1px solid black',
+            overflowY: 'scroll',
+            marginTop: 50,
+            marginLeft: 50,
+            flex: 1,
+            width: 500,
+            maxWidth: 500,
+          }}
+        >
+          <pre style={{ fontSize: 12, lineHeight: 1.2 }}>
+            {JSON.stringify(bodyWithLabels, null, 2)}
+          </pre>
+        </div>
+      </div>
     </>
   )
 }

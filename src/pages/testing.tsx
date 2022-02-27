@@ -1,59 +1,37 @@
+import { ExitToApp, Visibility, VisibilityOff } from '@mui/icons-material'
+import { Button } from '@mui/material'
 import React from 'react'
+import { getSubstringsFromPosition } from 'src/helpers'
 
-const TEXT = 'A word or phrase that describes the page you are looking at.'
+const TEXT = `ATM ATM864511 1625 N. MARKET STREET - MEMO=ATM864511 1625 N. MARKET STREET VDPS0 GOLDEN 1 CREDIT UNION SACRAMENTO CA US`
 
-const tags = [
-  { name: 'PERSON', color: '#FD005B', abbreviation: 'PER' },
+const labels: {
+  name: string
+  color: string
+  abbreviation: string
+  active?: boolean
+}[] = [
+  { name: 'PERSON', color: '#FC005B', abbreviation: 'PER', active: true },
   { name: 'ORGANIZATION', color: '#00A6FF', abbreviation: 'ORG' },
   { name: 'LOCATION', color: '#FFAC00', abbreviation: 'LOC' },
-  { name: 'DATE', color: '#ea00ff', abbreviation: 'DATE' },
+  { name: 'DATE', color: '#ec19ff', abbreviation: 'DATE' },
 ]
 
-const sortBy = (obj) => {
-  return obj.sort((a, b) => a.start - b.start)
-}
-
-const splitWithOffsets = (text, offsets: { start: number; end: number }[]) => {
-  let lastEnd = 0
-  const splits = []
-
-  for (let offset of sortBy(offsets)) {
-    const { start, end } = offset
-
-    if (lastEnd < start) {
-      splits.push({
-        start: lastEnd,
-        end: start,
-        content: text.slice(lastEnd, start),
-      })
-    }
-
-    splits.push({
-      ...offset,
-      mark: true,
-      content: text.slice(start, end),
-    })
-
-    lastEnd = end
-  }
-
-  if (lastEnd < text.length) {
-    splits.push({
-      start: lastEnd,
-      end: text.length,
-      content: text.slice(lastEnd, text.length),
-    })
-  }
-
-  return splits
-}
-
 const Testing = () => {
-  const [body, setBody] = React.useState([
-    { start: 0, end: TEXT.length, content: TEXT, tag: null },
-  ])
-  const [tag, setTag] = React.useState(tags[0])
-  const [bodyWithTags, setBodyWithTags] = React.useState([])
+  const [body, setBody] = React.useState<
+    {
+      start: number
+      end: number
+      content: string
+      label: string | null
+      color?: string
+      isMarked?: boolean
+    }[]
+  >([{ start: 0, end: TEXT.length, content: TEXT, label: null }])
+  const [label, setLabel] = React.useState(labels[0])
+  const [bodyWithLabels, setBodyWithLabels] = React.useState([])
+  const [bodyWithCleanLabel, setBodyWithCleanLabel] = React.useState([])
+  const [isPreviewing, setIsPreviewing] = React.useState(false)
 
   const getSelectedText = () => {
     document.onmouseup = () => {
@@ -79,10 +57,12 @@ const Testing = () => {
         selection.focusNode
       )
 
+      // when no node is selected
       if (position === 0 && selection.focusOffset === selection.anchorOffset) {
         return
       }
 
+      // if selection is backwards then swap the indices but keep the same start and end
       if (
         (!position && selection.anchorOffset > selection.focusOffset) ||
         position === Node.DOCUMENT_POSITION_PRECEDING
@@ -90,14 +70,23 @@ const Testing = () => {
         ;[start, end] = [end, start]
       }
 
-      setBodyWithTags([
-        ...bodyWithTags,
+      // set selected labels on selected content
+      setBodyWithLabels([
+        ...bodyWithLabels,
         {
           start,
           end,
           content: TEXT.slice(start, end),
-          tag: tag.abbreviation,
-          color: tag.color,
+          label: label.name,
+          color: label.color,
+        },
+      ])
+
+      setBodyWithCleanLabel([
+        ...bodyWithCleanLabel,
+        {
+          content: TEXT.slice(start, end),
+          label: label.abbreviation,
         },
       ])
 
@@ -105,79 +94,206 @@ const Testing = () => {
     }
   }
 
-  const handleDeselect = (e) => {
-    // if mark exists in body then remove it at the same position
+  const handleDeselect = (event: React.ChangeEvent<HTMLSpanElement>) => {
+    const dataId = event.target.getAttribute('data-id')
 
-    const itemStartPos = parseInt(e.target.getAttribute('data-id'), 10)
+    const itemStartPos = parseInt(dataId, 10)
 
-    // find the item in the body that has the same start position
-    const item = body.find((item) => item.start === itemStartPos && item.mark)
+    if (itemStartPos || itemStartPos === 0) {
+      const item = bodyWithLabels.find((item) => item.start === itemStartPos)
 
-    if (item) {
-      // slice item out of body
+      if (item) {
+        setBodyWithLabels(
+          bodyWithLabels.filter((item) => item.start !== itemStartPos)
+        )
+      }
     }
   }
 
-  const onSelectTags = (e) => {
-    const tag = e.target.value
-    setTag(tags.find((t) => t.abbreviation === tag))
+  // event of select option
+  const onSelectLabel = (event: any) => {
+    const { value } = event.target
+    const labelsClone = [...labels]
+
+    labelsClone.forEach((item) => {
+      if (item.abbreviation === value) {
+        item.active = true
+      } else {
+        item.active = false
+      }
+    })
+
+    const selectedLabel = labelsClone.find(
+      (item) => item.abbreviation === value
+    )
+
+    setLabel(selectedLabel)
   }
 
   React.useEffect(() => {
-    setBody(splitWithOffsets(TEXT, bodyWithTags))
-  }, [bodyWithTags])
-
-  console.log(body, bodyWithTags)
+    setBody(getSubstringsFromPosition(TEXT, bodyWithLabels))
+  }, [bodyWithLabels])
 
   return (
-    <>
+    <div
+      style={{
+        height: '80vh',
+        width: '90vw',
+        boxShadow: '0 5px 6px rgb(32 33 36 / 28%)',
+        margin: '50px auto',
+      }}
+    >
       <div>
-        <select onChange={onSelectTags}>
-          {tags.map((option) => (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            backgroundColor: '#000',
+            padding: 10,
+          }}
+        >
+          <div>
+            {labels.map((label) => (
+              <Button
+                variant="contained"
+                key={label.abbreviation}
+                style={{
+                  padding: '2px 10px',
+                  color: label.active ? '#000' : '#fff',
+                  marginLeft: 10,
+                  backgroundColor: label.active ? '#fff' : label.color,
+                  // if selected then set the background color
+                }}
+                value={label.abbreviation}
+                onClick={onSelectLabel}
+              >
+                {label.name}
+              </Button>
+            ))}
+          </div>
+          <div>
+            {/* preview labels button */}
+            <Button
+              style={{
+                padding: '2px 10px',
+                color: '#fff',
+                marginLeft: 10,
+                backgroundColor: '#000',
+              }}
+              endIcon={isPreviewing ? <VisibilityOff /> : <Visibility />}
+              onClick={() => setIsPreviewing(!isPreviewing)}
+            >
+              {isPreviewing ? 'Hide Preview' : 'Show Preview'}
+            </Button>
+            <Button
+              style={{
+                padding: '2px 10px',
+                color: '#fff',
+                marginLeft: 10,
+                backgroundColor: '#000',
+              }}
+              endIcon={<ExitToApp />}
+            >
+              Export
+            </Button>
+          </div>
+        </div>
+        {/* <select onChange={onSelectLabel}>
+          {labels.map((option) => (
             <option key={option.name} value={option.abbreviation}>
               {option.name}
             </option>
           ))}
-        </select>
+        </select> */}
       </div>
-      <div className="testing" onMouseUp={getSelectedText}>
-        {body.map((split, i) => (
-          <span
-            key={`${split.start}-${split.end}`}
-            onClick={(e) => handleDeselect(e)}
-          >
-            {split.mark ? (
-              <mark
-                key={`${split.start}-${split.end}`}
-                data-id={split.start}
-                style={{ backgroundColor: split.color }}
-              >
-                {split.content}
-                {split.tag && (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          margin: '10px 24px',
+        }}
+      >
+        <div
+          className="Testing"
+          onMouseUp={getSelectedText}
+          style={{ marginTop: 50, maxWidth: 900 }}
+        >
+          {body.map((split, i) => (
+            <span key={`${split.start}-${split.end}`}>
+              {split.isMarked ? (
+                <mark
+                  key={`${split.start}-${split.end}`}
+                  data-id={split.start}
+                  style={{
+                    backgroundColor: split.color,
+                    padding: '0 5px',
+                    fontWeight: 'bold',
+                    display: 'inline-flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                >
+                  {split.content}
+                  {split.label && (
+                    <span
+                      style={{
+                        fontSize: '0.7em',
+                        fontWeight: 500,
+                        marginLeft: 6,
+                        background: 'white',
+                        padding: '0 5px',
+                        borderRadius: '2px',
+                        color: split.color,
+                      }}
+                    >
+                      {split.label}
+                    </span>
+                  )}
                   <span
                     style={{
-                      fontSize: '0.7em',
-                      fontWeight: 500,
-                      marginLeft: 6,
+                      cursor: 'pointer',
+                      padding: '0 5px',
+                      color: '#CCCDCE',
+                      fontSize: 10,
+                      fontWeight: 'bold',
+                      marginBottom: 1,
                     }}
+                    onClick={(e) => handleDeselect(e as any)}
+                    data-id={split.start}
                   >
-                    {split.tag}
+                    x
                   </span>
-                )}
-              </mark>
-            ) : (
-              <span
-                key={split.start}
-                data-id={split.start}
-                // onClick={handleSplitClick({ start: split.start, end: split.end })}
-              >
-                {split.content}
-              </span>
-            )}
-          </span>
-        ))}
+                </mark>
+              ) : (
+                <span key={split.start} data-id={split.start}>
+                  {split.content}
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+        {isPreviewing && (
+          <div
+            style={{
+              height: 500,
+              border: '1px solid black',
+              overflowY: 'scroll',
+              marginTop: 50,
+              marginLeft: 50,
+              flex: 1,
+              width: 500,
+              maxWidth: 500,
+            }}
+          >
+            <pre style={{ fontSize: 12, lineHeight: 1.2 }}>
+              {JSON.stringify(bodyWithLabels, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   )
 }
 
