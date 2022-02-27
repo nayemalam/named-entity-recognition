@@ -2,9 +2,12 @@ import React from 'react'
 
 const TEXT = 'A word or phrase that describes the page you are looking at.'
 
-// const tag = 'PERSON'
-
-const tags = ['ORG', 'PER', 'LOC', 'DATE']
+const tags = [
+  { name: 'PERSON', color: '#FD005B', abbreviation: 'PER' },
+  { name: 'ORGANIZATION', color: '#00A6FF', abbreviation: 'ORG' },
+  { name: 'LOCATION', color: '#FFAC00', abbreviation: 'LOC' },
+  { name: 'DATE', color: '#ea00ff', abbreviation: 'DATE' },
+]
 
 const sortBy = (obj) => {
   return obj.sort((a, b) => a.start - b.start)
@@ -56,13 +59,7 @@ const Testing = () => {
   const [tag, setTag] = React.useState(tags[0])
   const [bodyWithTags, setBodyWithTags] = React.useState([])
 
-  // const renderSpan = (span) => {
-  //   if (props.getSpan) return props.getSpan(span) as T
-  //   return { start: span.start, end: span.end } as T
-  // }
-
   const getSelectedText = () => {
-    // if (!bodyWithTags) return
     document.onmouseup = () => {
       const selection = window.getSelection()
 
@@ -111,7 +108,8 @@ const Testing = () => {
           start,
           end,
           content: TEXT.slice(start, end),
-          tag,
+          tag: tag.abbreviation,
+          color: tag.color,
         },
       ])
 
@@ -134,31 +132,12 @@ const Testing = () => {
 
   const onSelectTags = (e) => {
     const tag = e.target.value
-    setTag(tag)
+    setTag(tags.find((t) => t.abbreviation === tag))
   }
 
   React.useEffect(() => {
     setBody(splitWithOffsets(TEXT, bodyWithTags))
   }, [bodyWithTags])
-
-  const renderItemWithTag = ({ start, content, tag }) => {
-    return (
-      <mark data-id={start}>
-        {content}
-        {tag && (
-          <span
-            style={{
-              fontSize: '0.7em',
-              fontWeight: 500,
-              marginLeft: 6,
-            }}
-          >
-            {tag}
-          </span>
-        )}
-      </mark>
-    )
-  }
 
   console.log(body, bodyWithTags)
 
@@ -167,36 +146,38 @@ const Testing = () => {
       <div>
         <select onChange={onSelectTags}>
           {tags.map((option) => (
-            <option key={option} value={option}>
-              {option}
+            <option key={option.name} value={option.abbreviation}>
+              {option.name}
             </option>
           ))}
         </select>
       </div>
       <div className="testing" onMouseUp={getSelectedText}>
-        {/* select option tags onchange */}
         {body.map((split, i) => (
           <span
             key={`${split.start}-${split.end}`}
             onClick={(e) => handleDeselect(e)}
           >
             {split.mark ? (
-              renderItemWithTag({ ...split })
+              <mark
+                key={`${split.start}-${split.end}`}
+                data-id={split.start}
+                style={{ backgroundColor: split.color }}
+              >
+                {split.content}
+                {split.tag && (
+                  <span
+                    style={{
+                      fontSize: '0.7em',
+                      fontWeight: 500,
+                      marginLeft: 6,
+                    }}
+                  >
+                    {split.tag}
+                  </span>
+                )}
+              </mark>
             ) : (
-              //   <mark key={`${split.start}-${split.end}`} data-id={split.start}>
-              //     {split.content}
-              //     {split.tag && (
-              //       <span
-              //         style={{
-              //           fontSize: '0.7em',
-              //           fontWeight: 500,
-              //           marginLeft: 6,
-              //         }}
-              //       >
-              //         {split.tag}
-              //       </span>
-              //     )}
-              //   </mark>
               <span
                 key={split.start}
                 data-id={split.start}
@@ -207,39 +188,6 @@ const Testing = () => {
             )}
           </span>
         ))}
-        {/* {body.map((split) => {
-        if (split.mark) {
-          return (
-            <mark
-              key={`${split.start}-${split.end}`}
-              data-id={split.start}
-              onClick={handleDeselect}
-            >
-              {split.content}
-              {tag && (
-                <span
-                  style={{
-                    fontSize: '0.7em',
-                    fontWeight: 500,
-                    marginLeft: 6,
-                  }}
-                >
-                  {tag}
-                </span>
-              )}
-            </mark>
-          )
-        }
-        return (
-          <span
-            key={split.start}
-            data-id={split.start}
-            // onClick={handleSplitClick({ start: split.start, end: split.end })}
-          >
-            {split.content}
-          </span>
-        )
-      })} */}
       </div>
     </>
   )
