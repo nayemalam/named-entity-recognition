@@ -25,7 +25,6 @@ const splitWithOffsets = (text, offsets: { start: number; end: number }[]) => {
         start: lastEnd,
         end: start,
         content: text.slice(lastEnd, start),
-        // tag: null,
       })
     }
 
@@ -33,7 +32,6 @@ const splitWithOffsets = (text, offsets: { start: number; end: number }[]) => {
       ...offset,
       mark: true,
       content: text.slice(start, end),
-      //   tag: tag ? tag : null,
     })
 
     lastEnd = end
@@ -44,7 +42,6 @@ const splitWithOffsets = (text, offsets: { start: number; end: number }[]) => {
       start: lastEnd,
       end: text.length,
       content: text.slice(lastEnd, text.length),
-      //   tag: null,
     })
   }
 
@@ -52,7 +49,6 @@ const splitWithOffsets = (text, offsets: { start: number; end: number }[]) => {
 }
 
 const Testing = () => {
-  const [anchors, setAnchors] = React.useState([])
   const [body, setBody] = React.useState([
     { start: 0, end: TEXT.length, content: TEXT, tag: null },
   ])
@@ -93,14 +89,6 @@ const Testing = () => {
       ) {
         ;[start, end] = [end, start]
       }
-
-      setAnchors([
-        ...anchors,
-        {
-          start,
-          end,
-        },
-      ])
 
       setBodyWithTags([
         ...bodyWithTags,

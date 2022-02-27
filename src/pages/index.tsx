@@ -1,228 +1,143 @@
 import React from 'react'
+import { getSubstringsFromPosition } from 'src/helpers'
 
-const TEXT = 'A word or phrase that describes the page you are looking at.'
+const TEXT = `Online Banking transfer to CHK 7325 Confirmation# 3555236074`
 
-const tag = 'PERSON'
-
-const sortBy = (obj) => {
-  return obj.sort((a, b) => a.start - b.start)
-}
-
-const splitWithOffsets = (text, offsets: { start: number; end: number }[]) => {
-  let lastEnd = 0
-  const splits = []
-
-  for (let offset of sortBy(offsets)) {
-    const { start, end } = offset
-
-    if (lastEnd < start) {
-      splits.push({
-        start: lastEnd,
-        end: start,
-        content: text.slice(lastEnd, start),
-        tag: null,
-      })
-    }
-
-    splits.push({
-      ...offset,
-      mark: true,
-      content: text.slice(start, end),
-      tag: tag ? tag : null,
-    })
-
-    lastEnd = end
-  }
-
-  if (lastEnd < text.length) {
-    splits.push({
-      start: lastEnd,
-      end: text.length,
-      content: text.slice(lastEnd, text.length),
-      tag: null,
-    })
-  }
-
-  return splits
-}
+const labels = [
+  { name: 'PERSON', color: '#FC005B', abbreviation: 'PER' },
+  { name: 'ORGANIZATION', color: '#00A6FF', abbreviation: 'ORG' },
+  { name: 'LOCATION', color: '#FFAC00', abbreviation: 'LOC' },
+  { name: 'DATE', color: '#ea00ff', abbreviation: 'DATE' },
+]
 
 const Home = () => {
-  const [selectedTextContents, setSelectedTextContents] = React.useState([])
-  const [anchor, setAnchor] = React.useState({ start: null, end: null })
-  const [value, setValue] = React.useState([])
-
-  const handleChange = (value) => {
-    setValue(value)
-  }
+  const [body, setBody] = React.useState<
+    {
+      start: number
+      end: number
+      content: string
+      label: string | null
+      color?: string
+      isMarked?: boolean
+    }[]
+  >([{ start: 0, end: TEXT.length, content: TEXT, label: null }])
+  const [label, setLabel] = React.useState(labels[0])
+  const [bodyWithLabels, setBodyWithLabels] = React.useState([])
+  const [bodyWithCleanLabel, setBodyWithCleanLabel] = React.useState([])
 
   const getSelectedText = () => {
     document.onmouseup = () => {
-      const selection = window.getSelection().toString()
-      // if (selection.length === 0 || selection === ' ') {
-      //   return
-      // }
+      const selection = window.getSelection()
 
-      let start =
-        parseInt(
-          window
-            .getSelection()
-            .anchorNode.parentElement.getAttribute('data-id'),
-          10
-        ) + window.getSelection().anchorOffset
-
-      let end =
-        parseInt(
-          window.getSelection().focusNode.parentElement.getAttribute('data-id'),
-          10
-        ) + window.getSelection().focusOffset
-
-      let position = window
-        .getSelection()
-        .anchorNode.compareDocumentPosition(window.getSelection().focusNode)
-
-      if (
-        position === 0 &&
-        window.getSelection().focusOffset === window.getSelection().anchorOffset
-      ) {
+      if (selection.toString() === ' ' || !selection.anchorNode) {
         return
       }
 
+      let start =
+        parseInt(
+          selection.anchorNode.parentElement.getAttribute('data-id'),
+          10
+        ) + selection.anchorOffset
+
+      let end =
+        parseInt(
+          selection.focusNode.parentElement.getAttribute('data-id'),
+          10
+        ) + selection.focusOffset
+
+      let position = selection.anchorNode.compareDocumentPosition(
+        selection.focusNode
+      )
+
+      // when no node is selected
+      if (position === 0 && selection.focusOffset === selection.anchorOffset) {
+        return
+      }
+
+      // if selection is backwards then swap the indices but keep the same start and end
       if (
-        (!position &&
-          window.getSelection().anchorOffset >
-            window.getSelection().focusOffset) ||
+        (!position && selection.anchorOffset > selection.focusOffset) ||
         position === Node.DOCUMENT_POSITION_PRECEDING
       ) {
         ;[start, end] = [end, start]
       }
 
-      setAnchor({
-        start,
-        end,
-      })
+      // set selected labels on selected content
+      setBodyWithLabels([
+        ...bodyWithLabels,
+        {
+          start,
+          end,
+          content: TEXT.slice(start, end),
+          label: label.abbreviation,
+          color: label.color,
+        },
+      ])
 
-      // if content has tag then return
-      // if (
-      //   selectedTextContents.some(
-      //     (selectedTextContent) => selectedTextContent.tag === tag
-      //   )
-      // ) {
-      //   return
-      // }
+      setBodyWithCleanLabel([
+        ...bodyWithCleanLabel,
+        {
+          content: TEXT.slice(start, end),
+          label: label.abbreviation,
+        },
+      ])
 
-      const splits = splitWithOffsets(TEXT, [{ start, end }])
-
-      const markedSplits = splits.filter((s) => s.mark)
-
-      // remove duplicates where start = 0 and end = text.length
-      const filteredSplits = splits.filter(
-        (s) => !(s.start === 0 && s.end === TEXT.length)
-      )
-
-      // set value recursively if the start is 0
-
-      // setValue([
-      //   ...value,
-      //   // { start: 0, end: start, content: TEXT.slice(0, start), tag: null },
-      //   { start, end, content: TEXT.slice(start, end), mark: true, tag: tag },
-      //   {
-      //     start: end,
-      //     end: TEXT.length,
-      //     content: TEXT.slice(end, TEXT.length),
-      //     tag: null,
-      //   },
-      // ])
-
-      // setSelectedTextContents(filteredSplits)
-
-      // set splits and push markedSplits to selectedTextContents
-      // setSelectedTextContents(markedSplits)
-
-      // add the selected value to the selectedTextContents
-      // setSelectedTextContents([
-      //   ...selectedTextContents,
-      //   {
-      //     start,
-      //     end,
-      //     mark: true,
-      //     content: TEXT.slice(start, end),
-      //     tag: tag ? tag : null,
-      //   },
-      // ])
-
-      window.getSelection().empty()
+      selection.empty()
     }
   }
 
-  console.log('value', value)
+  const handleDeselect = (event: React.ChangeEvent<HTMLSpanElement>) => {
+    const dataId = event.target.getAttribute('data-id')
 
-  const handleSplitClick = ({ start, end }) => {
-    // Find and remove the matching split.
-    const splitIndex = [anchor].findIndex(
-      (s) => s.start === start && s.end === end
-    )
+    const itemStartPos = parseInt(dataId, 10)
 
-    // console.log(splitIndex)
-    // if (splitIndex >= 0) {
-    //   reClicked([...[position].slice(0, splitIndex), ...props.value.slice(splitIndex + 1)])
-    // }
+    if (itemStartPos) {
+      const item = bodyWithLabels.find((item) => item.start === itemStartPos)
+
+      if (item) {
+        setBodyWithLabels(
+          bodyWithLabels.filter((item) => item.start !== itemStartPos)
+        )
+      }
+    }
   }
 
-  // console.log('value', value)
+  // event of select option
+  const onSelectLabel = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = event.target
 
-  // React.useEffect(() => {
-  //   const splits = splitWithOffsets(
-  //     TEXT,
-  //     anchor.start && anchor.end ? [anchor] : []
-  //   )
+    setLabel(labels.find((label) => label.abbreviation === value))
+  }
 
-  //   // selectedTextContents.forEach((selectedTextContent) => {
-  //   //   const matchedItem = splits.find(
-  //   //     (s) =>
-  //   //       s.start === selectedTextContent.start &&
-  //   //       s.end === selectedTextContent.end
-  //   //   )
-
-  //   //   if (!matchedItem) {
-  //   //     setSelectedTextContents([...selectedTextContent, matchedItem])
-  //   //   }
-  //   // })
-
-  //   setValue(splits)
-
-  //   // if (selectedTextContents.length === 0) {
-  //   // setSelectedTextContents(splits)
-
-  //   // }
-  // }, [anchor, value.length])
-
-  // const splits = splitWithOffsets(
-  //   TEXT,
-  //   position.start && position.end ? [position] : []
-  // )
-
-  // const splits = splitWithOffsets(
-  //   TEXT,
-  //   position.start && position.end ? [position] : []
-  // )
-
-  const splits = splitWithOffsets(
-    TEXT,
-    anchor.start && anchor.end ? [anchor] : []
-  )
-
-  // setValue(splits)
+  React.useEffect(() => {
+    setBody(getSubstringsFromPosition(TEXT, bodyWithLabels))
+  }, [bodyWithLabels])
 
   return (
-    <div className="home" onMouseUp={getSelectedText}>
-      Home
+    <>
       <div>
-        {splits.map((split) => {
-          if (split.mark) {
-            return (
-              <mark key={`${split.start}-${split.end}`} data-id={split.start}>
+        <select onChange={onSelectLabel}>
+          {labels.map((option) => (
+            <option key={option.name} value={option.abbreviation}>
+              {option.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="home" onMouseUp={getSelectedText}>
+        {body.map((split, i) => (
+          <span
+            key={`${split.start}-${split.end}`}
+            onClick={(e) => handleDeselect(e as any)}
+          >
+            {split.isMarked ? (
+              <mark
+                key={`${split.start}-${split.end}`}
+                data-id={split.start}
+                style={{ backgroundColor: split.color }}
+              >
                 {split.content}
-                {tag && (
+                {split.label && (
                   <span
                     style={{
                       fontSize: '0.7em',
@@ -230,24 +145,26 @@ const Home = () => {
                       marginLeft: 6,
                     }}
                   >
-                    {tag}
+                    {split.label}
                   </span>
                 )}
               </mark>
-            )
-          }
-          return (
-            <span
-              key={split.start}
-              data-id={split.start}
-              // onClick={handleSplitClick({ start: split.start, end: split.end })}
-            >
-              {split.content}
-            </span>
-          )
-        })}
+            ) : (
+              <span key={split.start} data-id={split.start}>
+                {split.content}
+              </span>
+            )}
+          </span>
+        ))}
       </div>
-    </div>
+      <div
+        style={{ height: 500, border: '1px solid black', overflowY: 'scroll' }}
+      >
+        <pre style={{ fontSize: 12, lineHeight: 1.2 }}>
+          {JSON.stringify(bodyWithCleanLabel, null, 2)}
+        </pre>
+      </div>
+    </>
   )
 }
 
