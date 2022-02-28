@@ -1,9 +1,11 @@
 import {
+  AddCircle,
   ArrowBackIos,
   ArrowForwardIos,
   Close,
   ExitToApp,
   Help,
+  RestartAlt,
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material'
@@ -19,9 +21,11 @@ import {
   TableBody,
   TableCell,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import React from 'react'
+import { toast } from 'react-toastify'
 import FileUploader from 'src/components/FileUploader'
 import { getSubstringsFromPosition } from 'src/helpers'
 
@@ -75,17 +79,32 @@ const Home = () => {
         return
       }
 
-      let start =
-        parseInt(
-          selection.anchorNode.parentElement.getAttribute('data-id'),
-          10
-        ) + selection.anchorOffset
+      console.log(
+        selection.anchorNode,
+        selection.focusNode,
+        selection.anchorOffset,
+        selection.focusOffset
+      )
 
-      let end =
-        parseInt(
-          selection.focusNode.parentElement.getAttribute('data-id'),
-          10
-        ) + selection.focusOffset
+      let startOfSelection = parseInt(
+        selection.anchorNode.parentElement.getAttribute('data-id'),
+        10
+      )
+      let endOfSelection = parseInt(
+        selection.focusNode.parentElement.getAttribute('data-id'),
+        10
+      )
+
+      if (isNaN(startOfSelection) || isNaN(endOfSelection)) {
+        return
+      }
+
+      let posOfCharsFromStartSelection = selection.anchorOffset
+      let posOfCharsFromEndSelection = selection.focusOffset
+
+      let start = startOfSelection + posOfCharsFromStartSelection
+
+      let end = endOfSelection + posOfCharsFromEndSelection
 
       let position = selection.anchorNode.compareDocumentPosition(
         selection.focusNode
@@ -176,6 +195,8 @@ const Home = () => {
       }
     })
 
+    toast.success('Export Complete', { delay: 50 })
+
     console.log(cleanedBody)
   }
   const onPrevTransaction = () => {
@@ -194,6 +215,25 @@ const Home = () => {
       // reset
       setBodyWithLabels([])
     }
+  }
+
+  const onAddLabel = () => {
+    toast.warning('Feature coming soon')
+  }
+
+  const onResetSelections = () => {
+    const labelsClone = [...labels]
+
+    for (let i = 0; i < labelsClone.length; i++) {
+      if (i === 0) {
+        labelsClone[i].active = true
+      } else {
+        labelsClone[i].active = false
+      }
+    }
+
+    setLabel(labelsClone[0])
+    setBodyWithLabels([])
   }
 
   React.useEffect(() => {
@@ -226,8 +266,24 @@ const Home = () => {
                 {label.name}
               </Button>
             ))}
+            <Tooltip title="Not Implemented Yet" placement="top">
+              <div style={{ display: 'inline' }}>
+                <IconButton aria-label="add" onClick={onAddLabel}>
+                  <AddCircle />
+                </IconButton>
+              </div>
+            </Tooltip>
           </div>
           <div>
+            {/* reset button */}
+            <Button
+              variant="outlined"
+              className="action-btn"
+              onClick={onResetSelections}
+              endIcon={<RestartAlt />}
+            >
+              Reset
+            </Button>
             <Button
               variant="outlined"
               className="action-btn"
@@ -236,14 +292,18 @@ const Home = () => {
             >
               {isPreviewing ? 'Hide Preview' : 'Show Preview'}
             </Button>
-            <Button
-              variant="outlined"
-              className="action-btn"
-              endIcon={<ExitToApp />}
-              onClick={onExport}
-            >
-              Export
-            </Button>
+            <Tooltip title="Not Implemented Yet" placement="top">
+              <div style={{ display: 'inline' }}>
+                <Button
+                  variant="outlined"
+                  className="action-btn"
+                  endIcon={<ExitToApp />}
+                  onClick={onExport}
+                >
+                  Export
+                </Button>
+              </div>
+            </Tooltip>
           </div>
         </div>
         <div className="entity">
