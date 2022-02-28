@@ -39,4 +39,10 @@ body {
   .hide {
     display: none;
   }
+
+  .logo-bottom-right {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+  }
 }

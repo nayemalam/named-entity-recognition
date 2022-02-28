@@ -11,10 +11,10 @@ const labels: {
   abbreviation: string
   active?: boolean
 }[] = [
-  { name: 'PERSON', color: '#FC005B', abbreviation: 'PER', active: true },
-  { name: 'ORGANIZATION', color: '#00A6FF', abbreviation: 'ORG' },
-  { name: 'LOCATION', color: '#FFAC00', abbreviation: 'LOC' },
-  { name: 'DATE', color: '#ec19ff', abbreviation: 'DATE' },
+  { name: 'PERSON', color: '#FB6A69', abbreviation: 'PER', active: true },
+  { name: 'ORGANIZATION', color: '#FCB96B', abbreviation: 'ORG' },
+  { name: 'LOCATION', color: '#71D7A5', abbreviation: 'LOC' },
+  { name: 'DATE', color: '#BA97FF', abbreviation: 'DATE' },
 ]
 
 const Home = () => {
@@ -24,8 +24,9 @@ const Home = () => {
       end: number
       content: string
       label: string | null
-      color?: string
       isMarked?: boolean
+      abbreviation?: string
+      color?: string
     }[]
   >([{ start: 0, end: TEXT.length, content: TEXT, label: null }])
   const [label, setLabel] = React.useState(labels[0])
@@ -78,6 +79,7 @@ const Home = () => {
           end,
           content: TEXT.slice(start, end),
           label: label.name,
+          abbreviation: label.abbreviation,
           color: label.color,
         },
       ])
@@ -135,7 +137,6 @@ const Home = () => {
     if (bodyWithLabels.length === 0) {
       return
     }
-
     const cleanedBody = bodyWithLabels.map((item) => {
       return {
         content: item.content,
@@ -151,33 +152,17 @@ const Home = () => {
   }, [bodyWithLabels])
 
   return (
-    <div
-      style={{
-        height: '80vh',
-        width: '90vw',
-        boxShadow: '0 5px 6px rgb(32 33 36 / 28%)',
-        margin: '50px auto',
-      }}
-    >
+    <div className="home container">
       <div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            backgroundColor: '#000',
-            padding: 10,
-          }}
-        >
+        <div className="label-selector">
           <div>
             {labels.map((label) => (
               <Button
                 variant="contained"
                 key={label.abbreviation}
+                className="label"
                 style={{
-                  padding: '2px 10px',
                   color: label.active ? '#fff' : '#000',
-                  marginLeft: 10,
                   backgroundColor: label.active ? label.color : '#fff',
                 }}
                 value={label.abbreviation}
@@ -190,24 +175,16 @@ const Home = () => {
           <div>
             {/* preview labels button */}
             <Button
-              style={{
-                padding: '2px 10px',
-                color: '#fff',
-                marginLeft: 10,
-                backgroundColor: '#000',
-              }}
+              variant="outlined"
+              className="action-btn"
               endIcon={isPreviewing ? <VisibilityOff /> : <Visibility />}
               onClick={() => setIsPreviewing(!isPreviewing)}
             >
               {isPreviewing ? 'Hide Preview' : 'Show Preview'}
             </Button>
             <Button
-              style={{
-                padding: '2px 10px',
-                color: '#fff',
-                marginLeft: 10,
-                backgroundColor: '#000',
-              }}
+              variant="outlined"
+              className="action-btn"
               endIcon={<ExitToApp />}
               onClick={onExport}
             >
@@ -216,18 +193,8 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          margin: '10px 0 10px 24px',
-          height: '90%',
-          overflowY: 'scroll',
-        }}
-      >
+      <div className="entity">
         <div
-          className="home"
           onMouseUp={getSelectedText}
           style={{ marginTop: 50, maxWidth: 900 }}
         >
@@ -237,40 +204,25 @@ const Home = () => {
                 <mark
                   key={`${split.start}-${split.end}`}
                   data-id={split.start}
+                  className="mark"
                   style={{
                     backgroundColor: split.color,
-                    padding: '0 5px',
-                    fontWeight: 'bold',
-                    display: 'inline-flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
+                    color: '#565656',
                   }}
                 >
                   {split.content}
                   {split.label && (
                     <span
                       style={{
-                        fontSize: '0.7em',
-                        fontWeight: 500,
-                        marginLeft: 6,
-                        background: 'white',
-                        padding: '0 5px',
-                        borderRadius: '2px',
                         color: split.color,
                       }}
+                      className="label"
                     >
-                      {split.label}
+                      {split.abbreviation}
                     </span>
                   )}
                   <span
-                    style={{
-                      cursor: 'pointer',
-                      padding: '0 5px',
-                      color: '#CCCDCE',
-                      fontSize: 10,
-                      fontWeight: 'bold',
-                      marginBottom: 1,
-                    }}
+                    className="close-btn"
                     onClick={(e) => handleDeselect(e as any)}
                     data-id={split.start}
                   >
@@ -286,18 +238,7 @@ const Home = () => {
           ))}
         </div>
         {isPreviewing && (
-          <div
-            style={{
-              height: 500,
-              border: '1px solid black',
-              overflowY: 'scroll',
-              marginTop: 50,
-              marginLeft: 50,
-              flex: 1,
-              width: 500,
-              maxWidth: 500,
-            }}
-          >
+          <div className="preview-container">
             <pre style={{ fontSize: 12, lineHeight: 1.2 }}>
               {JSON.stringify(
                 bodyWithLabels.map((item) => {
@@ -325,7 +266,7 @@ const Home = () => {
             'https://assets.website-files.com/60478d22345ad2b2ea2a1a12/6066044a87fc31364b9df7c3_ntropy.svg'
           }
           alt="logo"
-          style={{ position: 'absolute', bottom: 24, right: 24 }}
+          className="logo-bottom-right"
         />
       </a>
     </div>

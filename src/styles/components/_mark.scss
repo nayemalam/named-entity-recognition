@@ -1,0 +1,25 @@
+.mark {
+  padding: 0 5px;
+  font-weight: bold;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+
+  .label {
+    font-size: 0.7em;
+    font-weight: 600;
+    margin-left: 6px;
+    background: $mainWhite;
+    padding: 0 5px;
+    border-radius: 2px;
+  }
+
+  .close-btn {
+    cursor: pointer;
+    padding: 0 5px;
+    color: $mainWhite;
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 1px;
+  }
+}
