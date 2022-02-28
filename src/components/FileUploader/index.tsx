@@ -26,7 +26,19 @@ const FileUploader = ({ setTransactions }: any) => {
 
   return (
     <div style={{ width: '90vw', display: 'grid' }}>
-      <label htmlFor="file-uploader">Upload a text (.txt) file to begin</label>
+      <label htmlFor="file-uploader">
+        Upload a text file to begin, supported extensions:{' '}
+        <span
+          style={{
+            width: '80px',
+            fontSize: '12px',
+            fontFamily: 'Circular-Loom',
+            padding: '0 5px',
+          }}
+        >
+          .txt
+        </span>
+      </label>
       <input
         type="file"
         id="file-uploader"

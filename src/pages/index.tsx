@@ -337,7 +337,7 @@ const Home = () => {
             variant="determinate"
             title="test"
           />
-          <Typography variant="caption" className="progress-text">
+          <Typography variant="body1" className="progress-text">
             {`${Math.round(
               ((currentTransaction + 1) / transactions.length) * 100
             )}%`}

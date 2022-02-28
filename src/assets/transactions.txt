@@ -1,7 +1,3 @@
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
-import React from 'react'
-
-let TEXT = `
 Online Banking transfer to CHK 7325 Confirmation# 3555236074
 Online Transfer to CHK ...2863 transaction#: 9178118821
 HK BEST DIM SUM INC 10/25 PURCHASE SAN JOSE CA
@@ -102,38 +98,3 @@ PANERA BREAD #203263 5626685097 CA 1331 W
 MY NAILS A 4401 CENTURY BLVD PIT - MEMO=MY NAILS A 4401 CENTURY BLVD PITTSBURG CAUS
 POS WAL-MART Wal-Mart Sup - MEMO=PURCHASE 09/28 ANAHEIM CA CARD 3505
 STATERBROS022 4680 LA RIVERSIDE CA 506227 01/11 DEBIT_CARD
-`
-
-const newText = TEXT.split('\n').filter((item) => item.length > 0)
-
-const Content = () => {
-  return (
-    <div style={{ overflowY: 'scroll', height: '95vh' }}>
-      <Table>
-        <TableHead
-          style={{
-            position: 'sticky',
-            top: '0',
-            zIndex: 100,
-            backgroundColor: '#000',
-          }}
-        >
-          <TableRow>
-            <TableCell style={{ color: '#FFF', fontSize: 18 }}>
-              All Transactions
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {newText.map((item, index) => (
-            <TableRow key={index}>
-              <TableCell>{item}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
-
-export default Content
