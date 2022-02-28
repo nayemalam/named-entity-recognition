@@ -1,0 +1,17 @@
+.help-modal {
+  .dialog-content {
+    height: 600px;
+    font-family: $mainFont;
+
+    .spacer {
+      margin-left: 0;
+      margin-bottom: 20px;
+    }
+
+    .transactions-table {
+      border: 1px solid black;
+      height: 400px;
+      overflow-y: scroll;
+    }
+  }
+}

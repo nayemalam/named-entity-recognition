@@ -46,3 +46,27 @@ body {
     right: 24px;
   }
 }
+
+.action-btn {
+  padding: 2px 10px;
+  color: $companyBlack;
+  margin-left: 10px;
+  border-color: $companyBlack;
+
+  &:hover {
+    color: $mainWhite;
+    background-color: $companyBlack;
+  }
+
+  &:disabled {
+    background-color: $mainWhite;
+    color: rgba(0, 0, 0, 0.26);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    pointer-events: auto;
+  }
+}
+
+.json-text {
+  font-size: 12px;
+  line-height: 1.2;
+}
