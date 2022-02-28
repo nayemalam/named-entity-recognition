@@ -1,0 +1,16 @@
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  width: 90vw;
+  margin: 0 auto;
+
+  .progress-bar {
+    width: 50%;
+    align-self: center;
+  }
+
+  .progress-text {
+    align-self: center;
+    margin-left: -12%;
+  }
+}

@@ -1,0 +1,17 @@
+.entity {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 0 10px 24px;
+  height: 38vh;
+  overflow-y: scroll;
+
+  .selectable-container {
+    margin-top: 24px;
+    max-width: 900px;
+  }
+
+  .value {
+    font-size: 20px;
+  }
+}

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Button } from '@mui/material'
 import React from 'react'
 
 const Error404 = () => {
@@ -11,9 +11,15 @@ const Error404 = () => {
           Uh oh... The page you are trying to access does not exist. It might
           have been moved or deleted.
         </p>
-        <Link href="/">
-          <a>Home</a>
-        </Link>
+        <Button
+          className="action-btn"
+          variant="outlined"
+          onClick={() => {
+            window.location.href = '/'
+          }}
+        >
+          Go back to the homepage
+        </Button>
       </div>
     </div>
   )

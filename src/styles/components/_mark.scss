@@ -1,0 +1,39 @@
+.mark {
+  padding: 0 5px;
+  font-weight: bold;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  color: #565656;
+  margin-bottom: 5px;
+
+  .label {
+    font-size: 0.7em;
+    font-weight: 600;
+    margin-left: 6px;
+    background: $mainWhite;
+    padding: 0 5px;
+    border-radius: 2px;
+  }
+
+  .close-btn {
+    cursor: pointer;
+    color: $mainWhite;
+    font-size: 10px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.2);
+    margin-left: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    padding-bottom: 1px;
+
+    &:hover {
+      background-color: $companyBlack;
+    }
+  }
+}

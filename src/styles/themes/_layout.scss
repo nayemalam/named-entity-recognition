@@ -3,17 +3,32 @@ html {
   overflow: hidden;
   background-color: $mainWhite;
   color: $mainBlack;
+
+  ::-webkit-scrollbar-track {
+    background-color: #fafafa;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    background-color: #f5f5f5;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #a09b9b;
+  }
 }
 
 body {
   height: 100%;
+  margin: 0;
 }
 
 #__next {
   height: 100%;
 
   ::selection {
-    background-color: #f2cc35;
+    background: rgba(130, 195, 245, 0.99);
+    color: #032764;
   }
 }
 
@@ -24,4 +39,34 @@ body {
   .hide {
     display: none;
   }
+
+  .logo-bottom-right {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+  }
+}
+
+.action-btn {
+  padding: 2px 10px;
+  color: $companyBlack;
+  margin-left: 10px;
+  border-color: $companyBlack;
+
+  &:hover {
+    color: $mainWhite;
+    background-color: $companyBlack;
+  }
+
+  &:disabled {
+    background-color: $mainWhite;
+    color: rgba(0, 0, 0, 0.26);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    pointer-events: auto;
+  }
+}
+
+.json-text {
+  font-size: 12px;
+  line-height: 1.2;
 }
