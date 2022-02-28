@@ -1,71 +1,33 @@
-import {
-  AddCircle,
-  ArrowBackIos,
-  ArrowForwardIos,
-  Close,
-  ExitToApp,
-  Help,
-  RestartAlt,
-  Visibility,
-  VisibilityOff,
-} from '@mui/icons-material'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  LinearProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material'
 import React from 'react'
 import { toast } from 'react-toastify'
 import FileUploader from 'src/components/FileUploader'
+import Footer from 'src/components/Footer'
+import LabelSelector from 'src/components/LabelSelector'
+import MoreDetailsModal from 'src/components/MoreDetailsModal'
+import Pagination from 'src/components/Pagination'
+import PreviewContainer from 'src/components/PreviewContainer'
+import { labels } from 'src/constants'
 import { getSubstringsFromPosition } from 'src/helpers'
-
-const labels: {
-  name: string
-  color: string
-  abbreviation: string
-  active?: boolean
-}[] = [
-  { name: 'PERSON', color: '#FB6A69', abbreviation: 'PER', active: true },
-  { name: 'ORGANIZATION', color: '#FCB96B', abbreviation: 'ORG' },
-  { name: 'LOCATION', color: '#71D7A5', abbreviation: 'LOC' },
-  { name: 'DATE', color: '#BA97FF', abbreviation: 'DATE' },
-]
+import { ContentBody } from 'src/types'
 
 const Home = () => {
   const [label, setLabel] = React.useState(labels[0])
-  const [bodyWithLabels, setBodyWithLabels] = React.useState([])
-  const [bodyWithCleanLabel, setBodyWithCleanLabel] = React.useState([])
-  const [isPreviewing, setIsPreviewing] = React.useState(false)
-  const [transactions, setTransactions] = React.useState([
+  const [transactions, setTransactions] = React.useState<string[]>([
     'EXAMPLE TRANSACTION: TROYS BURGERS 07/04 PURCHASE SAN PEDRO CA',
   ])
-  const [currentTransaction, setCurrentTransaction] = React.useState(0)
-  const [isViewingTransactions, setIsViewingTransactions] = React.useState(true)
-  const [isHelpModalOpen, setIsHelpModalOpen] = React.useState(false)
+  const [isViewingTransactions, setIsViewingTransactions] =
+    React.useState<boolean>(true)
+  const [isHelpModalOpen, setIsHelpModalOpen] = React.useState<boolean>(false)
+  const [isPreviewing, setIsPreviewing] = React.useState<boolean>(false)
+
+  const [currentTransaction, setCurrentTransaction] = React.useState<number>(0)
 
   const TEXT = transactions[currentTransaction]
 
-  const [body, setBody] = React.useState<
-    {
-      start: number
-      end: number
-      content: string
-      label: string | null
-      isMarked?: boolean
-      abbreviation?: string
-      color?: string
-    }[]
-  >([{ start: 0, end: TEXT.length, content: TEXT, label: null }])
+  const [body, setBody] = React.useState<ContentBody[]>([
+    { start: 0, end: TEXT.length, content: TEXT, label: null },
+  ])
+  const [bodyWithLabels, setBodyWithLabels] = React.useState<ContentBody[]>([])
 
   const getSelectedText = () => {
     document.onmouseup = () => {
@@ -78,13 +40,6 @@ const Home = () => {
       ) {
         return
       }
-
-      console.log(
-        selection.anchorNode,
-        selection.focusNode,
-        selection.anchorOffset,
-        selection.focusOffset
-      )
 
       let startOfSelection = parseInt(
         selection.anchorNode.parentElement.getAttribute('data-id'),
@@ -133,15 +88,6 @@ const Home = () => {
           label: label.name,
           abbreviation: label.abbreviation,
           color: label.color,
-        },
-      ])
-
-      setBodyWithCleanLabel([
-        ...bodyWithCleanLabel,
-        {
-          id: start,
-          content: TEXT.slice(start, end),
-          label: label.name,
         },
       ])
 
@@ -249,232 +195,74 @@ const Home = () => {
     <div className="home">
       <FileUploader setTransactions={setTransactions} />
       <div className="container">
-        <div className="label-selector">
-          <div>
-            {labels.map((label) => (
-              <Button
-                variant="contained"
-                key={label.abbreviation}
-                className="label"
-                style={{
-                  color: label.active ? '#fff' : '#000',
-                  backgroundColor: label.active ? label.color : '#fff',
-                }}
-                value={label.abbreviation}
-                onClick={onSelectLabel}
-              >
-                {label.name}
-              </Button>
-            ))}
-            <Tooltip title="Not Implemented Yet" placement="top">
-              <div style={{ display: 'inline' }}>
-                <IconButton aria-label="add" onClick={onAddLabel}>
-                  <AddCircle />
-                </IconButton>
-              </div>
-            </Tooltip>
-          </div>
-          <div>
-            {/* reset button */}
-            <Button
-              variant="outlined"
-              className="action-btn"
-              onClick={onResetSelections}
-              endIcon={<RestartAlt />}
-            >
-              Reset
-            </Button>
-            <Button
-              variant="outlined"
-              className="action-btn"
-              endIcon={isPreviewing ? <VisibilityOff /> : <Visibility />}
-              onClick={() => setIsPreviewing(!isPreviewing)}
-            >
-              {isPreviewing ? 'Hide Preview' : 'Show Preview'}
-            </Button>
-            <Tooltip title="Not Implemented Yet" placement="top">
-              <div style={{ display: 'inline' }}>
-                <Button
-                  variant="outlined"
-                  className="action-btn"
-                  endIcon={<ExitToApp />}
-                  onClick={onExport}
-                >
-                  Export
-                </Button>
-              </div>
-            </Tooltip>
-          </div>
-        </div>
+        <LabelSelector
+          labels={labels}
+          onSelectLabel={onSelectLabel}
+          onAddLabel={onAddLabel}
+          onResetSelections={onResetSelections}
+          onExport={onExport}
+          isPreviewing={isPreviewing}
+          setIsPreviewing={setIsPreviewing}
+        />
+
         <div className="entity">
           <div onMouseUp={getSelectedText} className="selectable-container">
-            {body.map((split, i) => (
-              <span key={`${split.start}-${split.end}`} className="value">
-                {split.isMarked ? (
+            {body.map((substr, i) => (
+              <span key={`${substr.start}-${i}`} className="value">
+                {substr.isMarked ? (
                   <mark
-                    key={`${split.start}-${split.end}`}
-                    data-id={split.start}
+                    data-id={substr.start}
                     className="mark"
                     style={{
-                      backgroundColor: split.color,
+                      backgroundColor: substr.color,
                     }}
                   >
-                    {split.content}
-                    {split.label && (
+                    {substr.content}
+                    {substr.label && (
                       <span
                         style={{
-                          color: split.color,
+                          color: substr.color,
                         }}
                         className="label"
                       >
-                        {split.abbreviation}
+                        {substr.abbreviation}
                       </span>
                     )}
                     <span
                       className="close-btn"
                       onClick={(e) => handleDeselect(e as any)}
-                      data-id={split.start}
+                      data-id={substr.start}
                     >
                       x
                     </span>
                   </mark>
                 ) : (
-                  <span key={split.start} data-id={split.start}>
-                    {split.content}
-                  </span>
+                  <span data-id={substr.start}>{substr.content}</span>
                 )}
               </span>
             ))}
           </div>
-          {isPreviewing && (
-            <div className="preview-container">
-              <pre className="json-text">
-                {JSON.stringify(
-                  bodyWithLabels.map((item) => {
-                    return {
-                      content: item.content,
-                      label: item.label,
-                    }
-                  }),
-                  null,
-                  2
-                )}
-              </pre>
-            </div>
-          )}
+          {isPreviewing && <PreviewContainer body={bodyWithLabels} />}
         </div>
-        <a
-          href="https://ntropy.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Visit us!"
-        >
-          <img
-            src={
-              'https://assets.website-files.com/60478d22345ad2b2ea2a1a12/6066044a87fc31364b9df7c3_ntropy.svg'
-            }
-            alt="logo"
-            className="logo-bottom-right"
-          />
-        </a>
-      </div>
-      <div className="pagination">
-        <Button
-          disabled={currentTransaction === 0}
-          title={currentTransaction === 0 ? 'No more transactions' : null}
-          variant="outlined"
-          className="action-btn"
-          startIcon={<ArrowBackIos />}
-          onClick={onPrevTransaction}
-        >
-          Previous
-        </Button>
-
-        <>
-          <LinearProgress
-            className="progress-bar"
-            value={((currentTransaction + 1) / transactions.length) * 100}
-            variant="determinate"
-            title="test"
-          />
-          <Typography variant="body1" className="progress-text">
-            {`${Math.round(
-              ((currentTransaction + 1) / transactions.length) * 100
-            )}%`}
-          </Typography>
-        </>
-
-        <Button
-          disabled={currentTransaction === transactions.length - 1}
-          title={
-            currentTransaction === transactions.length - 1
-              ? 'No more transactions'
-              : null
-          }
-          variant="outlined"
-          className="action-btn"
-          endIcon={<ArrowForwardIos />}
-          onClick={onNextTransaction}
-        >
-          Next
-        </Button>
       </div>
 
-      <div className="transactions-viewer">
-        <IconButton onClick={() => setIsHelpModalOpen(true)}>
-          <Help />
-        </IconButton>
-        {isHelpModalOpen && (
-          <Dialog
-            open={isHelpModalOpen}
-            keepMounted
-            onClose={() => setIsHelpModalOpen(false)}
-            aria-describedby="alert-dialog-slide-description"
-            fullWidth
-            className="help-modal"
-          >
-            <DialogTitle>
-              <Box display="flex" alignItems="center">
-                <Box flexGrow={1}>Transactions Details</Box>
-                <Box>
-                  <IconButton onClick={() => setIsHelpModalOpen(false)}>
-                    <Close />
-                  </IconButton>
-                </Box>
-              </Box>
-            </DialogTitle>
-            <DialogContent className="dialog-content">
-              <p>
-                Current transaction: <strong>{currentTransaction + 1}</strong>/
-                {transactions.length}
-              </p>
-              <hr />
-              <p>Total number of transactions: {transactions.length}</p>
-              {/* view all transactions */}
-              <Button
-                variant="outlined"
-                className="action-btn spacer"
-                onClick={() => setIsViewingTransactions(!isViewingTransactions)}
-              >
-                {isViewingTransactions ? 'Hide' : 'View'} All Transactions
-              </Button>
-              {isViewingTransactions && (
-                <div className="transactions-table">
-                  <Table>
-                    <TableBody>
-                      {transactions.map((transaction, i) => (
-                        <TableRow key={i}>
-                          <TableCell>{transaction}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+      <Pagination
+        currentTransaction={currentTransaction}
+        onPrevTransaction={onPrevTransaction}
+        transactions={transactions}
+        onNextTransaction={onNextTransaction}
+      />
+
+      <MoreDetailsModal
+        isHelpModalOpen={isHelpModalOpen}
+        setIsHelpModalOpen={setIsHelpModalOpen}
+        currentTransaction={currentTransaction}
+        transactions={transactions}
+        isViewingTransactions={isViewingTransactions}
+        setIsViewingTransactions={setIsViewingTransactions}
+      />
+
+      <Footer />
     </div>
   )
 }

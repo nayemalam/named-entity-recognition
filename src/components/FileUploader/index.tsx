@@ -45,7 +45,7 @@ const FileUploader = ({ setTransactions }: any) => {
         className="file-uploader"
         onChange={onFileUpload}
         accept=".txt"
-        style={{ marginTop: 10 }}
+        style={{ marginTop: 10, width: 200 }}
       />
     </div>
   )

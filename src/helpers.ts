@@ -1,5 +1,3 @@
-// import * as fs from 'fs'
-
 export const sortByASC = (
   array: { start: number; end: number }[]
 ): { start: number; end: number }[] => {
@@ -46,15 +44,6 @@ export const getSubstringsFromPosition = (
   return substringArr
 }
 
-// export const extractTextFromTxtFile = () => {
-//   let convertedText
-
-//   convertedText = fs.readFileSync('./corpus/hemingway.txt')
-
-//   return convertedText.toString()
-// }
-
-// normalizes the entire text
 export const generateTokensFromText = (text: string) => {
   const tokenizedText = text
     .replace(/[^a-zA-Z ]/g, ' ') // only get all letters
