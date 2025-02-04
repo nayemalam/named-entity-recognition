@@ -2,8 +2,9 @@
 This Named Entity Recognition (NER) application allows users to label and categorize text efficiently. It is particularly useful for processing transactional data by identifying key entities such as persons, organizations, locations, dates, and more.
 
 ![image](https://github.com/user-attachments/assets/3a4dbeea-38b7-4bde-a2f7-09b3066ec97f)
+source: https://www.altexsoft.com/blog/named-entity-recognition/
 
-Key Features:
+#### Key Features:
 - Upload & Process Transactions: Users can upload .txt files containing transactions, and the system will automatically segment and prefill text for labeling.
 - Interactive Labeling: Assign labels by highlighting text and selecting categories like Person, Organization, Location, and Date.
 - Transaction Navigation: Move between transactions using previous/next controls with a built-in progress indicator.
@@ -14,7 +15,7 @@ Key Features:
 - User-Friendly Interface: Features such as help indicators, notifications, and a clean UI enhance usability.
 - This tool is designed for efficiency, making it easy to process and analyze large transaction datasets while maintaining flexibility in entity recognition.
 
-### Screenshots
+#### Screenshots
 <img width="1613" alt="image" src="https://github.com/user-attachments/assets/8178d2b5-558a-44e8-b100-48aaac826968" />
 <img width="1577" alt="image" src="https://github.com/user-attachments/assets/2b04d684-298a-4c68-8dea-0fe30305ba19" />
 <img width="1638" alt="image" src="https://github.com/user-attachments/assets/45a60d93-6bb4-4e05-8057-1b4088998f71" />
